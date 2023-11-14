@@ -1,0 +1,8 @@
+/ifcopenshell/
+/neo4j_official/data/
+/neo4j_official/import/
+/neo4j_official/logs/
+/neo4j_py2neo/data/
+/neo4j_py2neo/import/
+/neo4j_py2neo/logs/
+/venv/

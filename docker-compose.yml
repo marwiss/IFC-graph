@@ -1,0 +1,86 @@
+
+# docker-compose up --build --force-recreate --detach
+# docker-compose up = Create and start containers.
+# --build = Build images before starting containers.
+# --force-recreate = Recreate containers even if their configuration and image haven’t changed.
+# --detach = Detached mode: Run containers in the background.
+
+version: '3.7'
+
+networks:
+  neo4j_network:
+    driver: bridge
+
+# HTTP: 27474 on server matches 7474 in neo4j_py2neo container.
+# HTTPS: 27473 on server matches 7473 in neo4j_py2neo container.
+# Bolt: 27687 on server matches 7687 in neo4j_py2neo container.
+# Environment variables are read from the .env file.
+# The .env file should be placed at the root
+# of the project directory next to your docker-compose.yml file.
+# APOC core and extended must be loaded from /neo4j_py2neo/plugins folder.
+
+services:
+
+  neo4j_py2neo:
+    container_name: neo4j_py2neo
+    image: library/neo4j:5.7.0-community
+    restart: unless-stopped
+    ports:
+      - "17474:7474"
+      - "17473:7473"
+      - "17687:7687"
+    networks:
+      - neo4j_network
+    volumes:
+      - ./neo4j_py2neo/data:/data
+      - ./neo4j_py2neo/logs:/logs
+      - ./neo4j_py2neo/conf:/conf
+      - ./neo4j_py2neo/import:/import
+      - ./neo4j_py2neo/plugins:/plugins
+    environment:
+      - NEO4J_AUTH=${NEO4J_USER}/${NEO4J_INITIAL_PASSWORD}
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+      - NEO4J_dbms_security_auth__minimum__password__length=4
+      - NEO4J_server_http_enabled
+      - NEO4J_server_http_listen__address=0.0.0.0:7474
+      - NEO4J_server_https_enabled
+      - NEO4J_server_https_listen__address=0.0.0.0:7473
+      - NEO4J_server_bolt_enabled
+      - NEO4J_server_bolt_listen__address=0.0.0.0:7687
+    secrets:
+      - neo4j_password
+
+  neo4j_official:
+    container_name: neo4j_official
+    image: library/neo4j:5.7.0-community
+    restart: unless-stopped
+    ports:
+      - "27474:7474"
+      - "27473:7473"
+      - "27687:7687"
+    networks:
+      - neo4j_network
+    volumes:
+      - ./neo4j_official/data:/data
+      - ./neo4j_official/logs:/logs
+      - ./neo4j_official/conf:/conf
+      - ./neo4j_official/import:/import
+      - ./neo4j_official/plugins:/plugins
+    environment:
+      - NEO4J_AUTH=${NEO4J_USER}/${NEO4J_INITIAL_PASSWORD}
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+      - NEO4J_dbms_security_auth__minimum__password__length=4
+      - NEO4J_server_http_enabled
+      - NEO4J_server_http_listen__address=0.0.0.0:7474
+      - NEO4J_server_https_enabled
+      - NEO4J_server_https_listen__address=0.0.0.0:7473
+      - NEO4J_server_bolt_enabled
+      - NEO4J_server_bolt_listen__address=0.0.0.0:7687
+    secrets:
+      - neo4j_password
+
+secrets:
+  neo4j_password:
+    file: ./secrets/neo4j_password.txt
